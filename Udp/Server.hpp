@@ -1,30 +1,40 @@
-#include <iostream>
-#include <stdlib.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <string>
-#include <cassert>
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <netinet/in.h>
+#pragma once
 
-typedef struct sockaddr sockaddr;
-typedef struct sockaddr_in sockaddr_in;
+#include "Socket.hpp"
+#include <functional> 
 
+typedef std::function<void (const std::string&,std::string* resp)> Handler;
 
-class Sock
+class Server
 {
   public:
-    Sock()
-    {}
-    SockInit()
+    Server()
     {
-    
+      assert(_sock.Socket());
     }
-    Recv();
-    Send();
-    ~Sock();
-  private:
-    Sock _sock;
-};
 
+    bool Start(const std::string& ip,uint16_t port,Handler handler)
+    {
+      bool ret = _sock.Bind(ip,port);
+      if(!ret){
+        return false;
+      }
+      for(;;)
+      {
+        std::string req;
+        std::string remote_ip;
+        uint16_t remote_port = 0;
+        bool ret = _sock.Recv(&req,&remote_ip,&remote_port);
+        if(!ret){
+           continue;
+        }
+        std::string resp;
+        handle(req,&resp);
+        _sock.Send(resp,remote_ip,remote_port);
+      }
+      _sock.Close();
+      return true;
+    }
+  private:
+    UdpSocket _sock;
+};

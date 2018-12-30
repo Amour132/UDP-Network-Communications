@@ -1,6 +1,6 @@
 #pragma once 
 
-#include "udp_socket.h"
+#include "Socket.hpp"
 
 class Client
 {
@@ -26,7 +26,7 @@ class Client
       _sock.Close();
     }
   private:
-    Socket _sock;
+   UdpSocket _sock;
     std::string _ip;
     uint16_t _port;
 

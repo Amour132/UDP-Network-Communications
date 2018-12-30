@@ -1,0 +1,95 @@
+#pragma once
+
+#include <iostream>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <string>
+#include <cassert>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
+
+typedef struct sockaddr sockaddr;
+typedef struct sockaddr_in sockaddr_in;
+
+
+class UdpSocket
+{
+  public:
+    UdpSocket():_fd(-1)
+    {}
+
+    bool Socket()
+    {
+      _fd = socket(AF_INET,SOCK_DGRAM,0);
+      if(_fd < 0)
+      {
+        std::cerr << "socket error" << std::endl;
+        return false;
+      }
+      return true;
+    }
+
+    bool Close()
+    {
+      close(_fd);
+      return true;
+    }
+
+    bool Bind(const std::string& ip,uint16_t port)
+    {
+      sockaddr_in addr;
+      addr.sin_family = AF_INET;
+      addr.sin_addr.s_addr = inet_addr(ip.c_str());
+      addr.sin_port = htons(port);
+      int ret = bind(_fd,(sockaddr*)&addr,sizeof(addr));
+      if(ret < 0)
+      {
+        std::cerr << "bind error" << std::endl;
+        return false;
+      }
+      return true;
+    }
+
+    bool Recv(std::string* buf,std::string* ip = NULL,uint16_t* port = NULL)
+    {
+      char temp[1024] = {0};
+      sockaddr_in peer;
+      socklen_t len = sizeof(peer);
+      ssize_t read_size = recvfrom(_fd,temp,sizeof(temp)-1,0,(sockaddr*)&peer,&len);
+      if(read_size < 0)
+      {
+        std::cerr << "read error" << std::endl;
+        return false;
+      }
+      buf->assign(temp,read_size);
+      if(ip)
+      {
+        *ip = inet_ntoa(peer.sin_addr);
+      }
+      if(port){
+        *port = ntohs(peer.sin_addr);
+      }
+      return true;
+    }
+    
+    bool Send(const std::string&buf,const std::string& ip,uint16_t port) 
+    {
+      sockaddr_in addr;
+      addr.sin_family = AF_INET;
+      addr.sin_addr.s_addr = inet_addr(ip.c_str());
+      addr.sin_port = htons(port);
+      ssize_t write_size = sendto(_fd,buf.data(),buf.size(),0,(sockaddr*)&addr,sizeof(addr));
+      if(write_size < 0)
+      {
+        std::cerr << "write error" << std::endl;
+        return false;
+      }
+      return true;
+    }
+  
+  private:
+    int _fd;
+};
+
