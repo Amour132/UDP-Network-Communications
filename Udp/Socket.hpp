@@ -68,8 +68,8 @@ class UdpSocket
       {
         *ip = inet_ntoa(peer.sin_addr);
       }
-      if(port){
-        *port = ntohs(peer.sin_addr);
+      if(port != NULL){
+        *port = ntohs(peer.sin_port);
       }
       return true;
     }

@@ -29,7 +29,7 @@ class Server
            continue;
         }
         std::string resp;
-        handle(req,&resp);
+        handler(req,&resp);
         _sock.Send(resp,remote_ip,remote_port);
       }
       _sock.Close();

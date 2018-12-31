@@ -11,15 +11,19 @@ int main(int argc,char* argv[])
   Client myclient(argv[1],atoi(argv[2]));
   for(;;)
   {
-    std::string buf;
-    std::cin >> buf;
-    if(buf)
+    std::string word;
+    std::cout << "请输入要查询得单词" << std::endl;
+    std::cin >> word;
+    if(word.size() != 0)
     {
-      myclient.Send(buf);
-      std::cout << buf << std::endl;
+      myclient.Send(word);
       std::string message; 
       myclient.Recv(&message);
-      std::cout << "Server recv#" << message << std::endl;
+      std::cout << word << ":" << message << std::endl;
+    }
+    else 
+    {
+      break; 
     }
   }
   return 0;
